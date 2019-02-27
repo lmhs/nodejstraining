@@ -14,12 +14,12 @@ export default class DirWatcher extends EventEmitter {
     this.emit(`error: ${error}`);
   }
 
-  postMessageChange(message) {
-    this.emit('dirwatcher:changed', message);
+  postMessageChange(data) {
+    this.emit('dirwatcher:changed', data);
   }
 
-  postMessageCreated(filename) {
-    this.postMessageChange(`${filename} was created`);
+  postMessageCreated({path, filename}) {
+    this.postMessageChange({path, filename, message: `${filename} was created`});
   }
 
   postMessageRemoved(filename) {
@@ -38,7 +38,7 @@ export default class DirWatcher extends EventEmitter {
       const prevFilesState = files.filter(filterByCSVExtension);
 
       for (const filename of prevFilesState) {
-        this.postMessageCreated(filename);
+        this.postMessageCreated({path, filename});
       }
 
       const interval = setInterval(() => {
@@ -54,7 +54,7 @@ export default class DirWatcher extends EventEmitter {
             for (const filename of curFilesState) {
               if (!prevFilesState.includes(filename)) {
                 prevFilesState.push(filename);
-                this.postMessageCreated(filename);
+                this.postMessageCreated({path, filename});
               }
             }
           } else if (prevFilesState.length >= curFilesState.length) {
@@ -68,6 +68,5 @@ export default class DirWatcher extends EventEmitter {
         });
       }, delay);
     });
-
   }
 }
